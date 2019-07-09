@@ -69,6 +69,6 @@ def set_caffe_param_mult(m, base_lr, base_weight_decay):
     return param_list
 
 
-def print_time(seconds):
-    print('Epoch cost time {}:{}:{}'.format(seconds / 3600, (seconds % 3600) / 60,
-                                            seconds % 60))
+def print_time(name, seconds):
+    print(name + ' cost time: {}:{}:{}'.format(seconds // 3600, (seconds % 3600) // 60,
+                                              seconds % 60))

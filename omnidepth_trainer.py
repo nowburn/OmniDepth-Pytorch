@@ -150,8 +150,9 @@ class OmniDepthTrainer(object):
         self.network = self.network.train()
         self.i = 0
         max_batch_num = len(self.train_dataloader) - 1
-        # Load data
         end = time.time()
+        # self.loss.reset()
+        # Load data
         for batch_num, data in enumerate(self.train_dataloader):
             # Parse the data into inputs, ground truth, and other
             inputs, gt, other = self.parse_data(data)
@@ -237,14 +238,14 @@ class OmniDepthTrainer(object):
             self.train_one_epoch()
             epoch_end_time = datetime.datetime.now()
             total_seconds = (epoch_end_time - epoch_start_time).seconds
-            util.print_time(total_seconds)
+            util.print_time('Epoch', total_seconds)
             if self.epoch % self.validation_freq == 0:
                 # self.validate()
                 self.save_checkpoint()
                 self.visualize_metrics()
         end_time = datetime.datetime.now()
         seconds = (end_time - start_time).seconds
-        util.print_time(seconds)
+        util.print_time('Training', seconds)
 
     def evaluate(self, checkpoint_path):
         print('Evaluating model....')

@@ -93,6 +93,21 @@ def delete_nopair_imgs(imgs_path):
     print('delete no pair or repeat imgs num: ', del_cnt)
 
 
+def copy_n_imgs(num, origin, to):
+    cnt = 0
+    for img_name in os.listdir(origin):
+        if not re.match(r'.+d\.jpeg', img_name):
+            img = Image.open(origin + img_name)
+            img.save(to + img_name)
+            cnt += 1
+        if cnt >= num:
+            break
+    print('copy {} imgs from {} to {}'.format(cnt, origin, to))
+
+
 if __name__ == '__main__':
     imgs_path = "./data/training/"
-    delete_nopair_imgs(imgs_path)
+    # delete_nopair_imgs(imgs_path)
+
+    to = '/home/nowburn/python_projects/cv/other/PytorchTutorial/data/validation/'
+    copy_n_imgs(100, imgs_path, to)
