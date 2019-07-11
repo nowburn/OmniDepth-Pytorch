@@ -4,6 +4,7 @@ import cv2
 from PIL import Image
 import os
 import re
+import shutil
 
 
 # imgs_path = './data/test/'
@@ -105,9 +106,42 @@ def copy_n_imgs(num, origin, to):
     print('copy {} imgs from {} to {}'.format(cnt, origin, to))
 
 
-if __name__ == '__main__':
-    imgs_path = "./data/training/"
-    # delete_nopair_imgs(imgs_path)
+def copy_n_imgpairs(num, origin, to):
+    cnt = 0
+    img_list = []
+    for img_name in os.listdir(origin):
+        if re.match(r'.+d\.jpeg', img_name):
+            prefix = img_name[:-7]
+        else:
+            prefix = img_name[:-5]
 
-    to = '/home/nowburn/python_projects/cv/other/PytorchTutorial/data/validation/'
-    copy_n_imgs(100, imgs_path, to)
+        if prefix not in img_list:
+            img_list.append(prefix)
+        cnt += 1
+        if cnt >= num:
+            break
+    for prefix in img_list:
+        shutil.move(origin + prefix + '.jpeg', to + prefix + '.jpeg')
+        shutil.move(origin + prefix + '_d.jpeg', to + prefix + '_d.jpeg')
+    print('copy {} img pairs'.format(cnt))
+
+
+def move_files(origin, to):
+    cnt = 0
+    for file in os.listdir(origin):
+        if re.match(r'.+d\.jpeg', file):
+            shutil.move(origin + file, to + file)
+            cnt += 1
+    print('total move files num: %d' % cnt)
+
+
+if __name__ == '__main__':
+    imgs_path = "./data/tmp/"
+    delete_nopair_imgs(imgs_path)
+
+    # to = '/home/nowburn/python_projects/cv/other/PytorchTutorial/data/validation/'
+    # copy_n_imgs(100, imgs_path, to)
+    origin = '/home/nowburn/python_projects/cv/Outdoor-Reconstruction/data/training/'
+    to = '/home/nowburn/python_projects/cv/Outdoor-Reconstruction/data/tmp/'
+    # copy_n_imgs(2000, origin, to)
+    # copy_n_imgpairs(674, origin, to)

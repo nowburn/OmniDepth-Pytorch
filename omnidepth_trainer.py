@@ -125,6 +125,8 @@ class OmniDepthTrainer(object):
         self.loss = AverageMeter()
         self.i = 0
         self.num_samples = num_samples
+        self.lin_rms_sq_error = 99999999999
+        self.loss_error = 99999999999
 
     def forward_pass(self, inputs):
         '''
@@ -151,7 +153,7 @@ class OmniDepthTrainer(object):
         self.i = 0
         max_batch_num = len(self.train_dataloader) - 1
         end = time.time()
-        # self.loss.reset()
+        self.loss.reset()
         # Load data
         for batch_num, data in enumerate(self.train_dataloader):
             # Parse the data into inputs, ground truth, and other
@@ -164,6 +166,7 @@ class OmniDepthTrainer(object):
 
             # Compute the loss(es)
             loss = self.compute_loss(output, gt)
+            self.loss.update(loss)
             # Backpropagation of the total loss
             backward_time = time.time()
             self.backward_pass(loss)
@@ -183,7 +186,7 @@ class OmniDepthTrainer(object):
                 # self.print_batch_report(batch_num, loss)
 
     def validate(self):
-        print('Validating model....')
+        # print('Validating model....')
 
         # Put the model in eval mode
         self.network = self.network.eval()
@@ -212,11 +215,12 @@ class OmniDepthTrainer(object):
                         self.save_samples(inputs, gt, other, output)
 
         # Print a report on the validation results
-        print('Validation finished in {} seconds'.format(time.time() - s))
-        self.print_validation_report()
+        # print('Validation finished in {} seconds'.format(time.time() - s))
+        # self.print_validation_report()
 
     def train(self, checkpoint_path=None, weights_only=False):
         print('Starting training')
+        print(datetime.datetime.now())
         start_time = datetime.datetime.now()
         # Load pretrained parameters if desired
         if checkpoint_path is not None:
@@ -240,8 +244,11 @@ class OmniDepthTrainer(object):
             total_seconds = (epoch_end_time - epoch_start_time).seconds
             util.print_time('Epoch', total_seconds)
             if self.epoch % self.validation_freq == 0:
-                # self.validate()
-                self.save_checkpoint()
+                self.validate()
+                if self.lin_rms_sq_error_meter.avg <= self.lin_rms_sq_error and self.loss.avg <= self.loss_error:
+                    self.save_checkpoint()
+                    self.lin_rms_sq_error = self.lin_rms_sq_error_meter.avg
+                    self.loss_error = self.loss.avg
                 self.visualize_metrics()
         end_time = datetime.datetime.now()
         seconds = (end_time - start_time).seconds
@@ -309,7 +316,7 @@ class OmniDepthTrainer(object):
                 self.compute_eval_metrics(output, gt)
 
                 # visu
-                self.visualize_samples(inputs, gt, other, output)
+                self.visualize_download_output(inputs, gt, output)
 
         # Print a report on the validation results
         print('Prediction finished in {} seconds'.format(time.time() - s))
@@ -511,6 +518,45 @@ class OmniDepthTrainer(object):
                 caption='Depth GT',
                 xmax=max_depth))
 
+    def visualize_download_output(self, inputs, gt, output):
+        '''
+        Updates the output samples visualization
+        '''
+        rgb = inputs[0][0].cpu()
+        depth_pred = output[0][0].cpu()
+        gt_depth = gt[0][0].cpu()
+        depth_mask = gt[1][0].cpu()
+
+        self.vis[0].image(
+            visualize_rgb(rgb),
+            env=self.vis[1],
+            win='rgb',
+            opts=dict(
+                title='Input RGB Image',
+                caption='Input RGB Image'))
+
+        max_depth = max(
+            ((depth_mask > 0).float() * gt_depth).max().item(),
+            ((depth_mask > 0).float() * depth_pred).max().item())
+        self.vis[0].image(
+            depth_pred.squeeze(),
+            env=self.vis[1],
+            win='depth_pred',
+            opts=dict(
+                title='Depth Prediction',
+                caption='Depth Prediction',
+                xmax=max_depth,
+                xmin=gt_depth.min().item()))
+
+        self.vis[0].image(
+            gt_depth.squeeze(),
+            env=self.vis[1],
+            win='gt_depth',
+            opts=dict(
+                title='Depth GT',
+                caption='Depth GT',
+                xmax=max_depth))
+
     def visualize_metrics(self):
         '''
         Updates the metrics visualization
@@ -554,6 +600,8 @@ class OmniDepthTrainer(object):
         percent = self.i * 100.0 / self.num_samples  # 计算完成进度，格式为xx.xx%
         process_bar = '[' + '>' * num_arrow + '-' * num_line + ']' \
                       + '%.2f' % percent + '%' + '\r'  # 带输出的字符串，'\r'表示不换行回到最左边
+        if batch_num == max_batch_num:
+            loss = self.loss.avg
         print('\r',
               'Epoch: [{0}][{1}/{2}]'.format(self.epoch + 1, batch_num + 1,
                                              len(self.train_dataloader)) + ' - Loss: %.3f ' % loss + process_bar,
@@ -611,7 +659,7 @@ class OmniDepthTrainer(object):
         # Save latest checkpoint (constantly overwriting itself)
         checkpoint_path = osp.join(
             self.checkpoint_dir,
-            'checkpoint_latest.pth')
+            'epoch_latest.pth')
 
         # Actually saves the latest checkpoint and also updating the file holding the best one
         util.save_checkpoint(
@@ -629,7 +677,8 @@ class OmniDepthTrainer(object):
         # Copies the latest checkpoint to another file stored for each epoch
         history_path = osp.join(
             self.checkpoint_dir,
-            'checkpoint_{:03d}.pth'.format(self.epoch + 1))
+            'epoch{}_{:.0f}_{:.0f}.pth'.format((self.epoch + 1), math.sqrt(self.lin_rms_sq_error_meter.avg),
+                                               math.sqrt(self.loss.avg)))
         shutil.copyfile(checkpoint_path, history_path)
         print('Checkpoint saved')
 

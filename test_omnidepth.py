@@ -1,4 +1,3 @@
-import torch
 import visdom
 
 from omnidepth_trainer import OmniDepthTrainer
@@ -12,11 +11,11 @@ import os.path as osp
 # --------------
 network_type = 'RectNet'  # 'RectNet' or 'UResNet'
 experiment_name = 'omnidepth'
-val_file_list = './data/test'  # List of evaluation files
+val_file_list = './data/tmp'  # List of evaluation files
 checkpoint_dir = osp.join('experiments', experiment_name)
 checkpoint_path = None
-checkpoint_path = osp.join(checkpoint_dir, 'model_best.pth')
-batch_size = 3
+checkpoint_path = osp.join(checkpoint_dir, 'epoch_latest.pth')
+batch_size = 1
 num_workers = 8
 validation_sample_freq = -1
 device_ids = [0]
@@ -39,7 +38,6 @@ elif network_type == 'RectNet':
     beta_list = [0.134, 0.068, ]
 else:
     assert True, 'Unsupported network type'
-
 
 # -------------------------------------------------------
 # Set up the training routine

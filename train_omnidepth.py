@@ -1,6 +1,3 @@
-import torch
-import torch.nn as nn
-
 import visdom
 
 from omnidepth_trainer import OmniDepthTrainer
@@ -21,15 +18,15 @@ val_file_list = './data/validation'  # File with list of validation files
 max_steps_file = './data/num_samples.txt'  # File with number of max_steips for progress show
 checkpoint_dir = osp.join('experiments', experiment_name)
 checkpoint_path = None
-checkpoint_path = osp.join(checkpoint_dir, 'checkpoint_latest.pth')
+checkpoint_path = osp.join(checkpoint_dir, 'epoch_latest.pth')
 load_weights_only = True
-batch_size = 10
+batch_size = 12
 num_workers = 10
 lr = 2e-4
 step_size = 3
 lr_decay = 0.5
-num_epochs = 10
-validation_freq = 5
+num_epochs = 9999
+validation_freq = 1
 visualization_freq = 5
 validation_sample_freq = -1
 device_ids = [0]
