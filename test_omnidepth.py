@@ -12,7 +12,7 @@ from criteria import *
 # --------------
 network_type = 'RectNet'  # 'RectNet' or 'UResNet'
 experiment_name = 'omnidepth'
-val_file_list = '/home/nowburn/python_projects/cv/OmniDepth/data/show/tes/'  # List of evaluation files
+val_file_list = './data/show/test/'  # List of evaluation files
 checkpoint_dir = osp.join('experiments', experiment_name)
 checkpoint_path = None
 checkpoint_path = osp.join(checkpoint_dir, 'epoch_latest.pth')
