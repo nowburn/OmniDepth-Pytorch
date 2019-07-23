@@ -154,14 +154,13 @@ def move_files(origin, to):
 
 
 if __name__ == '__main__':
-    imgs_path = '/home/nowburn/python_projects/cv/OmniDepth/data/training/'
+    imgs_path = '/home/nowburn/python_projects/cv/OmniDepth/show/'
     origin = '/home/nowburn/python_projects/cv/OmniDepth/data/training/'
     to = '/home/nowburn/python_projects/cv/OmniDepth/data/tmp/'
     # copy_n_imgs(100, imgs_path, to)
     # copy_n_imgs(2000, origin, to)
     # copy_n_imgpairs(674, origin, to)
     #filter__nopair_imgs(origin, to)
-    delete_nopair_imgs(imgs_path)
-    # pano_resize(imgs_path)
+    pano_resize(imgs_path)
 
 
