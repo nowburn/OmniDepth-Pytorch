@@ -13,14 +13,14 @@ import os.path as osp
 # --------------
 network_type = 'RectNet'  # 'RectNet' or 'UResNet'
 experiment_name = 'omnidepth'
-train_file_list = './data/training'  # File with list of training files
-val_file_list = './data/validation'  # File with list of validation files
+train_file_list = './data/training/'  # File with list of training files
+val_file_list = './data/validation/'  # File with list of validation files
 max_steps_file = './data/num_samples.txt'  # File with number of max_steips for progress show
 checkpoint_dir = osp.join('experiments', experiment_name)
 checkpoint_path = None
 checkpoint_path = osp.join(checkpoint_dir, 'epoch_latest.pth')
 load_weights_only = True
-batch_size = 12
+batch_size = 10
 num_workers = 10
 lr = 2e-4
 step_size = 3

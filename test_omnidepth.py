@@ -5,13 +5,14 @@ from network import *
 from dataset import *
 
 import os.path as osp
+from criteria import *
 
 # --------------
 # PARAMETERS
 # --------------
 network_type = 'RectNet'  # 'RectNet' or 'UResNet'
 experiment_name = 'omnidepth'
-val_file_list = './data/tmp'  # List of evaluation files
+val_file_list = '/home/nowburn/python_projects/cv/OmniDepth/data/show/tes/'  # List of evaluation files
 checkpoint_dir = osp.join('experiments', experiment_name)
 checkpoint_path = None
 checkpoint_path = osp.join(checkpoint_dir, 'epoch_latest.pth')
@@ -39,6 +40,7 @@ elif network_type == 'RectNet':
 else:
     assert True, 'Unsupported network type'
 
+criterion = MultiScaleL2Loss(alpha_list, beta_list)
 # -------------------------------------------------------
 # Set up the training routine
 network = nn.DataParallel(
@@ -57,7 +59,7 @@ trainer = OmniDepthTrainer(
     network,
     None,
     val_dataloader,
-    None,
+    criterion,
     None,
     checkpoint_dir,
     device,
@@ -65,3 +67,4 @@ trainer = OmniDepthTrainer(
     validation_sample_freq=validation_sample_freq)
 
 trainer.predict(checkpoint_path)
+

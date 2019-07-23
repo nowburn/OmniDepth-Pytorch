@@ -56,7 +56,7 @@ def pano_resize(imgs_path):
     for img_name in os.listdir(imgs_path):
         if not re.match(r'.+d\.jpeg', img_name):
             img_cnt += 1
-            img_path = imgs_path + "/" + img_name
+            img_path = imgs_path + img_name
             img = Image.open(img_path)
             (x, y) = img.size
             x_new = 512
@@ -126,6 +126,24 @@ def copy_n_imgpairs(num, origin, to):
     print('copy {} img pairs'.format(cnt))
 
 
+def filter__nopair_imgs(origin, to):
+    img_list = []
+    for img_name in os.listdir(origin):
+        if re.match(r'.+d\.jpeg', img_name):
+            prefix = img_name[:-7]
+        else:
+            prefix = img_name[:-5]
+
+        if prefix in img_list:
+            img_list.remove(prefix)
+        else:
+            img_list.append(prefix)
+
+    for prefix in img_list:
+        shutil.move(origin + prefix + '_d.jpeg', to + prefix + '_d.jpeg')
+    print('copy {} img pairs'.format(len(img_list)))
+
+
 def move_files(origin, to):
     cnt = 0
     for file in os.listdir(origin):
@@ -136,12 +154,14 @@ def move_files(origin, to):
 
 
 if __name__ == '__main__':
-    imgs_path = "./data/tmp/"
-    delete_nopair_imgs(imgs_path)
-
-    # to = '/home/nowburn/python_projects/cv/other/PytorchTutorial/data/validation/'
+    imgs_path = '/home/nowburn/python_projects/cv/OmniDepth/data/training/'
+    origin = '/home/nowburn/python_projects/cv/OmniDepth/data/training/'
+    to = '/home/nowburn/python_projects/cv/OmniDepth/data/tmp/'
     # copy_n_imgs(100, imgs_path, to)
-    origin = '/home/nowburn/python_projects/cv/Outdoor-Reconstruction/data/training/'
-    to = '/home/nowburn/python_projects/cv/Outdoor-Reconstruction/data/tmp/'
     # copy_n_imgs(2000, origin, to)
     # copy_n_imgpairs(674, origin, to)
+    #filter__nopair_imgs(origin, to)
+    delete_nopair_imgs(imgs_path)
+    # pano_resize(imgs_path)
+
+

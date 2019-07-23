@@ -8,10 +8,8 @@ import torch.utils.data
 
 import numpy as np
 from skimage import io
-import Imath, array
 
 from PIL import Image
-import os.path as osp
 import os
 import re
 
@@ -23,7 +21,7 @@ class OmniDepthDataset(torch.utils.data.Dataset):
         self.image_list = []
         for img_name in os.listdir(imgs_path):
             if re.match(r'.+\d\.jpeg', img_name):
-                self.image_list.append(imgs_path + "/" + os.path.splitext(img_name)[0])
+                self.image_list.append(imgs_path + os.path.splitext(img_name)[0])
 
         self.max_depth = 255.0
 
@@ -41,7 +39,6 @@ class OmniDepthDataset(torch.utils.data.Dataset):
 
         # Make a list of loaded data
         pano_data = [rgb, depth, depth_mask, common_paths]
-
         # Convert to torch format
         pano_data[0] = torch.from_numpy(pano_data[0].transpose(2, 0, 1)).float()
         pano_data[1] = torch.from_numpy(pano_data[1][None, ...]).float()

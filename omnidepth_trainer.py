@@ -182,8 +182,8 @@ class OmniDepthTrainer(object):
                 self.visualize_samples(inputs, gt, other, output)
                 self.print_progress(batch_num, max_batch_num, len(inputs[0]), loss)
 
-                # Print the most recent batch report
-                # self.print_batch_report(batch_num, loss)
+            # Print the most recent batch report
+            # self.print_batch_report(batch_num, loss)
 
     def validate(self):
         # print('Validating model....')
@@ -237,7 +237,6 @@ class OmniDepthTrainer(object):
             # Increment the LR scheduler
             if self.scheduler is not None:
                 self.scheduler.step()
-
             # Run an epoch of training
             self.train_one_epoch()
             epoch_end_time = datetime.datetime.now()
@@ -321,6 +320,32 @@ class OmniDepthTrainer(object):
         # Print a report on the validation results
         print('Prediction finished in {} seconds'.format(time.time() - s))
         self.print_validation_report()
+
+    def filter_loss_gen(self, checkpoint_path, threshold, to):
+        print('Filter ....')
+        # Load the checkpoint to evaluate
+        self.load_checkpoint(checkpoint_path, True, True)
+
+        # Load data
+        s = time.time()
+        cnt = 0
+        for batch_num, data in enumerate(self.val_dataloader):
+            # Parse the data
+            inputs, gt, common_path = self.parse_data(data)
+            rgb_img_path = common_path[0] + '.jpeg'
+            depth_img_path = common_path[0] + '_d.jpeg'
+            # Run a forward pass
+            output = self.forward_pass(inputs)
+
+            loss = self.compute_loss(output, gt)
+            if loss > threshold:
+                shutil.move(rgb_img_path, to + osp.basename(rgb_img_path))
+                shutil.move(depth_img_path, to + osp.basename(depth_img_path))
+                cnt += 1
+        print('img loss > {} has num: {}'.format(threshold, cnt))
+
+        # Print a report on the validation results
+        print('Prediction finished in {} seconds'.format(time.time() - s))
 
     def parse_data(self, data):
         '''
